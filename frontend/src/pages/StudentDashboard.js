@@ -28,8 +28,10 @@ import {
   Calendar,
   Star,
   Zap,
+  Map,
 } from "lucide-react";
 import { toast } from "sonner";
+import Footer from "../components/Footer";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -152,6 +154,21 @@ const StudentDashboard = () => {
       iconColor: "text-white",
       image:
         "https://images.unsplash.com/photo-1565688534245-05d6b5be184a?w=400&h=250&fit=crop&crop=center",
+    },
+    {
+      icon: <Map className="w-8 h-8" />,
+      title: "Roadmap",
+      description:
+        "Explore course-based roadmaps to guide your learning journey.",
+      detailedContent:
+        "Structured course sequences, prerequisite mapping, skill progression paths, and career-aligned learning tracks.",
+      path: "/roadmap",
+      testId: "nav-roadmap-btn",
+      color: "bg-gradient-to-br from-yellow-500 to-orange-500",
+      iconColor: "text-white",
+      image:
+        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop&crop=center",
+      badge: "New",
     },
   ];
 
@@ -395,6 +412,7 @@ const StudentDashboard = () => {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

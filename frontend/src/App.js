@@ -10,6 +10,8 @@ import { Toaster } from "sonner";
 import "./App.css";
 import { isAuthenticated, getUser } from "./lib/utils";
 import NavigationBar from "./components/NavigationBar";
+import SplashCursor from "./components/SplashCursor";
+
 
 // Pages
 import LandingPage from "./pages/LandingPage";
@@ -28,6 +30,7 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import LearningPathPage from "./pages/LearningPathPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import ResourcesPage from "./pages/ResourcesPage";
+import Roadmap from "./pages/Roadmap";
 
 const ProtectedRoute = ({ children }) => {
   return isAuthenticated() ? children : <Navigate to="/auth" />;
@@ -165,6 +168,14 @@ const AppContent = () => {
             }
           />
           <Route
+            path="/roadmap"
+            element={
+              <ProtectedRoute>
+                <Roadmap />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/achievements"
             element={
               <ProtectedRoute>
@@ -205,6 +216,7 @@ const AppContent = () => {
 function App() {
   return (
     <div className="App">
+      <SplashCursor />
       <BrowserRouter>
         <AppContent />
       </BrowserRouter>
