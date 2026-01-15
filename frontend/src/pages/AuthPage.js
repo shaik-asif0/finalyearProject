@@ -166,7 +166,7 @@ const AuthPage = () => {
                     }
                     required
                     className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
-                    className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+      
                   />
                 </div>
                 <Button
