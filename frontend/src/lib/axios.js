@@ -37,8 +37,11 @@ axiosInstance.interceptors.request.use(
     // Add retry logic for mobile
     config.retry = retryConfig;
 
-    // If offline, try to return cached data
-    if (!isOnline()) {
+    // Skip offline check for auth endpoints
+    const isAuthEndpoint = config.url.includes("/auth/");
+
+    // If offline and not auth endpoint, try to return cached data
+    if (!isOnline() && !isAuthEndpoint) {
       const cacheKey = `${config.method}-${config.url}`;
       const cached = localStorage.getItem(`api-cache-${cacheKey}`);
       if (cached) {
