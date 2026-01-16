@@ -6,12 +6,11 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import "./App.css";
 import { isAuthenticated, getUser } from "./lib/utils";
 import NavigationBar from "./components/NavigationBar";
 import SplashCursor from "./components/SplashCursor";
-
 
 // Pages
 import LandingPage from "./pages/LandingPage";
@@ -52,6 +51,27 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => {
 const AppContent = () => {
   const location = useLocation();
   const [isAuth, setIsAuth] = useState(isAuthenticated());
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Monitor online/offline status
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      toast.success("Back online! Full AI features available.");
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      toast.warning("You're offline. Using demo mode for AI features.");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   // Re-check auth on every route change
   useEffect(() => {

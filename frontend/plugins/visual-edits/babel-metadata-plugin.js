@@ -6,7 +6,7 @@ const fs = require("fs");
 // ───────────────────────────────────────────────────────────────────────────────
 // ===== Dynamic composite detection (auto-exclude) =====
 const EXTENSIONS = [".tsx", ".ts", ".jsx", ".js"];
-const PROJECT_ROOT = path.resolve(__dirname, '../..'); // frontend root (../../ from plugins/visual-edits/)
+const PROJECT_ROOT = path.resolve(__dirname, "../.."); // frontend root (../../ from plugins/visual-edits/)
 const SRC_ALIAS = path.resolve(PROJECT_ROOT, "src");
 
 const RESOLVE_CACHE = new Map(); // key: fromFile::source -> absPath | null
@@ -184,8 +184,10 @@ function fileExportHasPortals({
   }
 
   let found = false;
+  const visited = new Set();
 
-  function subtreeHasPortals(nodePath) {
+  function subtreeHasPortals(nodePath, visited, depth = 0) {
+    if (depth > 10) return false; // Prevent infinite recursion
     let hit = false;
     nodePath.traverse({
       JSXOpeningElement(op) {
@@ -199,7 +201,15 @@ function fileExportHasPortals({
           // capitalized child: may itself be portalish
           const binding = op.scope.getBinding(name);
           if (binding && binding.path) {
-            const childHas = subtreeHasPortals(binding.path);
+            const bindingName = binding.identifier.name;
+            if (visited.has(bindingName)) return;
+            visited.add(bindingName);
+            const childHas = subtreeHasPortals(
+              binding.path,
+              visited,
+              depth + 1
+            );
+            visited.delete(bindingName);
             if (childHas) {
               hit = true;
               return;
@@ -228,7 +238,7 @@ function fileExportHasPortals({
 
   for (const pth of compPaths) {
     if (!pth || !pth.node) continue;
-    if (subtreeHasPortals(pth)) {
+    if (subtreeHasPortals(pth, visited, 0)) {
       found = true;
       break;
     }
@@ -343,9 +353,7 @@ const babelMetadataPlugin = ({ types: t }) => {
   const hasProp = (openingEl, name) =>
     openingEl?.attributes?.some(
       (a) =>
-        t.isJSXAttribute(a) &&
-        t.isJSXIdentifier(a.name) &&
-        a.name.name === name,
+        t.isJSXAttribute(a) && t.isJSXIdentifier(a.name) && a.name.name === name
     );
 
   const isPortalPrimitive = (name) =>
@@ -382,14 +390,14 @@ const babelMetadataPlugin = ({ types: t }) => {
       (a) =>
         t.isJSXAttribute(a) &&
         t.isJSXIdentifier(a.name) &&
-        a.name.name.startsWith("x-"),
+        a.name.name.startsWith("x-")
     );
 
   // ⬇️ Add { markExcluded } option: when true, include x-excluded="true"
   const insertMetaAttributes = (openingEl, attrsToAdd) => {
     if (!openingEl.attributes) openingEl.attributes = [];
     const spreadIndex = openingEl.attributes.findIndex((attr) =>
-      t.isJSXSpreadAttribute(attr),
+      t.isJSXSpreadAttribute(attr)
     );
     if (spreadIndex === -1) {
       openingEl.attributes.push(...attrsToAdd);
@@ -401,34 +409,34 @@ const babelMetadataPlugin = ({ types: t }) => {
   const pushMetaAttrs = (
     openingEl,
     { normalizedPath, lineNumber, elementName, isDynamic },
-    { markExcluded = false } = {},
+    { markExcluded = false } = {}
   ) => {
     if (alreadyHasXMeta(openingEl)) return;
     const metaAttrs = [
       t.jsxAttribute(
         t.jsxIdentifier("x-file-name"),
-        t.stringLiteral(normalizedPath),
+        t.stringLiteral(normalizedPath)
       ),
       t.jsxAttribute(
         t.jsxIdentifier("x-line-number"),
-        t.stringLiteral(String(lineNumber)),
+        t.stringLiteral(String(lineNumber))
       ),
       t.jsxAttribute(
         t.jsxIdentifier("x-component"),
-        t.stringLiteral(elementName),
+        t.stringLiteral(elementName)
       ),
       t.jsxAttribute(
         t.jsxIdentifier("x-id"),
-        t.stringLiteral(`${normalizedPath}_${lineNumber}`),
+        t.stringLiteral(`${normalizedPath}_${lineNumber}`)
       ),
       t.jsxAttribute(
         t.jsxIdentifier("x-dynamic"),
-        t.stringLiteral(isDynamic ? "true" : "false"),
+        t.stringLiteral(isDynamic ? "true" : "false")
       ),
     ];
     if (markExcluded) {
       metaAttrs.push(
-        t.jsxAttribute(t.jsxIdentifier("x-excluded"), t.stringLiteral("true")),
+        t.jsxAttribute(t.jsxIdentifier("x-excluded"), t.stringLiteral("true"))
       );
     }
     insertMetaAttributes(openingEl, metaAttrs);
@@ -943,7 +951,7 @@ const babelMetadataPlugin = ({ types: t }) => {
           pushMetaAttrs(
             openingElement,
             { normalizedPath, lineNumber, elementName, isDynamic },
-            { markExcluded: true },
+            { markExcluded: true }
           );
           return;
         }
@@ -964,16 +972,18 @@ const babelMetadataPlugin = ({ types: t }) => {
           pushMetaAttrs(
             openingElement,
             { normalizedPath, lineNumber, elementName, isDynamic },
-            { markExcluded: true },
+            { markExcluded: true }
           );
           return;
         }
 
         // ✅ Normal case: add metadata attributes directly
-        pushMetaAttrs(
-          openingElement,
-          { normalizedPath, lineNumber, elementName, isDynamic },
-        );
+        pushMetaAttrs(openingElement, {
+          normalizedPath,
+          lineNumber,
+          elementName,
+          isDynamic,
+        });
       },
 
       // Add metadata to native HTML elements (lowercase JSX)
@@ -1000,7 +1010,7 @@ const babelMetadataPlugin = ({ types: t }) => {
             t.isJSXAttribute(attr) &&
             attr.name &&
             attr.name.name &&
-            attr.name.name.startsWith("x-"),
+            attr.name.name.startsWith("x-")
         );
         if (hasDebugAttr) return;
 
@@ -1023,31 +1033,36 @@ const babelMetadataPlugin = ({ types: t }) => {
         // 1. Inside an array iteration (.map(), etc.)
         // 2. Has expression children (like {variable} or {obj.prop})
         const parentElement = jsxPath.parentPath; // JSXElement containing this opening element
-        const isInArrayMethod = parentElement ? isJSXDynamic(parentElement) : false;
-        const hasExpressions = parentElement && parentElement.node ? hasAnyExpression(parentElement.node) : false;
+        const isInArrayMethod = parentElement
+          ? isJSXDynamic(parentElement)
+          : false;
+        const hasExpressions =
+          parentElement && parentElement.node
+            ? hasAnyExpression(parentElement.node)
+            : false;
         const isDynamic = isInArrayMethod || hasExpressions;
 
         // Add metadata attributes
         insertMetaAttributes(jsxPath.node, [
           t.jsxAttribute(
             t.jsxIdentifier("x-file-name"),
-            t.stringLiteral(normalizedPath),
+            t.stringLiteral(normalizedPath)
           ),
           t.jsxAttribute(
             t.jsxIdentifier("x-line-number"),
-            t.stringLiteral(String(lineNumber)),
+            t.stringLiteral(String(lineNumber))
           ),
           t.jsxAttribute(
             t.jsxIdentifier("x-component"),
-            t.stringLiteral(elementName),
+            t.stringLiteral(elementName)
           ),
           t.jsxAttribute(
             t.jsxIdentifier("x-id"),
-            t.stringLiteral(`${normalizedPath}_${lineNumber}`),
+            t.stringLiteral(`${normalizedPath}_${lineNumber}`)
           ),
           t.jsxAttribute(
             t.jsxIdentifier("x-dynamic"),
-            t.stringLiteral(isDynamic ? "true" : "false"),
+            t.stringLiteral(isDynamic ? "true" : "false")
           ),
         ]);
       },

@@ -685,7 +685,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="py-12 bg-zinc-900">
         <div className="max-w-7xl mx-auto px-6 text-center text-zinc-400">
-          <p>&copy; 2025 AI Learning Platform. All rights reserved.</p>
+          <p>&copy; 2026 AI Learning Platform. All rights reserved.</p>
         </div>
       </footer>
     </div>

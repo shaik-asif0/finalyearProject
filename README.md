@@ -24,7 +24,26 @@ A comprehensive full-stack platform that combines **AI tutoring**, **automated c
 - **📉 Analytics**: Track batch performance and placement readiness
 - **👥 Student Management**: View learning sessions and code submissions
 
-## 🛠️ Tech Stack
+## � Offline Functionality
+
+The platform is designed to work seamlessly both online and offline:
+
+- **📱 Progressive Web App (PWA)**: Install the app on your device for offline access
+- **🎯 Demo Mode**: When offline, AI features automatically switch to demo mode with sample responses
+- **💾 Local Data Storage**: All user data, progress, and submissions are stored locally
+- **🔄 Automatic Detection**: The app detects online/offline status and adjusts functionality accordingly
+- **⚡ Fast Loading**: Cached resources ensure quick loading even on slow connections
+
+**Offline Capabilities:**
+
+- View all dashboards and progress
+- Access learning materials and roadmaps
+- Practice coding problems (evaluation in demo mode)
+- Review resume analysis (sample feedback)
+- Take mock interviews (sample questions and feedback)
+- All data persists locally and syncs when back online
+
+## �🛠️ Tech Stack
 
 ### Backend
 
@@ -85,7 +104,8 @@ pip install -r requirements.txt
 # The .env file is pre-configured for:
 # - SQLite database
 # - JWT authentication
-# - Azure OpenAI integration (needs your credentials)
+# - AI_MODE=demo (for offline/demo mode) or AI_MODE=azure (for online AI)
+# - Azure OpenAI integration (optional - only needed for AI_MODE=azure)
 ```
 
 #### 3. Frontend Setup

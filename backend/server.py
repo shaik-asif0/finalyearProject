@@ -781,6 +781,15 @@ async def fetch_users_by_role(role: str, limit: int = 100) -> List[dict]:
 
 # ==================== AI RESPONSE FUNCTIONS ====================
 
+def _check_internet_connectivity() -> bool:
+    """Check if internet connection is available"""
+    try:
+        import socket
+        socket.create_connection(("8.8.8.8", 53), timeout=3)
+        return True
+    except OSError:
+        return False
+
 def _get_demo_response(prompt: str, response_type: str = "tutor") -> str:
     """Generate demo responses when AWS is not configured"""
     
@@ -901,7 +910,7 @@ def _call_azure_openai_sync(prompt: str, system_instruction: str = None) -> str:
 
 
 async def get_ai_response(prompt: str, session_id: str, system_instruction: str = None, response_type: str = "tutor") -> str:
-    """Get AI response - uses Azure OpenAI"""
+    """Get AI response - uses configured AI service or demo mode"""
     
     # Determine response type from prompt content
     if "code" in prompt.lower() or "evaluate" in prompt.lower():
@@ -910,6 +919,16 @@ async def get_ai_response(prompt: str, session_id: str, system_instruction: str 
         response_type = "resume"
     elif "interview" in prompt.lower() or "Q1:" in prompt or "Q2:" in prompt:
         response_type = "interview"
+    
+    # Check AI mode - if demo, always use demo responses
+    if AI_MODE == 'demo':
+        logger.info("Using demo mode for AI response")
+        return _get_demo_response(prompt, response_type)
+    
+    # Check internet connectivity for Azure mode
+    if AI_MODE == 'azure' and not _check_internet_connectivity():
+        logger.warning("No internet connection, falling back to demo mode")
+        return _get_demo_response(prompt, response_type)
     
     # Check if Azure OpenAI is configured
     if not AZURE_OPENAI_API_KEY or not AZURE_OPENAI_ENDPOINT:
