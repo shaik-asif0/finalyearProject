@@ -48,18 +48,18 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-      console.log('Attempting login with:', { email: loginData.email });
-      console.log('API URL:', API);
+      console.log("Attempting login with:", { email: loginData.email });
+      console.log("API URL:", API);
 
       const response = await axios.post(`${API}/auth/login`, loginData);
-      console.log('Login response:', response.data);
+      console.log("Login response:", response.data);
 
       setAuthToken(response.data.token);
       setUser(response.data.user);
 
       // Verify token was stored
       const storedToken = getAuthToken();
-      console.log('Token stored successfully:', !!storedToken);
+      console.log("Token stored successfully:", !!storedToken);
 
       // Dispatch auth change event for App to detect
       window.dispatchEvent(new Event("authChange"));
@@ -72,9 +72,9 @@ const AuthPage = () => {
       else if (role === "college_admin") navigate("/college");
       else navigate("/dashboard");
     } catch (error) {
-      console.error('Login error:', error);
-      console.error('Error response:', error.response);
-      console.error('Error message:', error.message);
+      console.error("Login error:", error);
+      console.error("Error response:", error.response);
+      console.error("Error message:", error.message);
 
       let errorMessage = "Login failed";
       if (error.response?.data?.detail) {
@@ -96,18 +96,22 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-      console.log('Attempting registration with:', { email: registerData.email, name: registerData.name, role: registerData.role });
-      console.log('API URL:', API);
+      console.log("Attempting registration with:", {
+        email: registerData.email,
+        name: registerData.name,
+        role: registerData.role,
+      });
+      console.log("API URL:", API);
 
       const response = await axios.post(`${API}/auth/register`, registerData);
-      console.log('Registration response:', response.data);
+      console.log("Registration response:", response.data);
 
       setAuthToken(response.data.token);
       setUser(response.data.user);
 
       // Verify token was stored
       const storedToken = getAuthToken();
-      console.log('Token stored successfully:', !!storedToken);
+      console.log("Token stored successfully:", !!storedToken);
 
       // Dispatch auth change event for App to detect
       window.dispatchEvent(new Event("authChange"));
@@ -120,9 +124,9 @@ const AuthPage = () => {
       else if (role === "college_admin") navigate("/college");
       else navigate("/dashboard");
     } catch (error) {
-      console.error('Registration error:', error);
-      console.error('Error response:', error.response);
-      console.error('Error message:', error.message);
+      console.error("Registration error:", error);
+      console.error("Error response:", error.response);
+      console.error("Error message:", error.message);
 
       let errorMessage = "Registration failed";
       if (error.response?.data?.detail) {
@@ -210,7 +214,6 @@ const AuthPage = () => {
                     }
                     required
                     className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
-      
                   />
                 </div>
                 <Button

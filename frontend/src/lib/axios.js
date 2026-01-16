@@ -5,7 +5,7 @@ const axiosInstance = axios.create({
   baseURL: API,
   timeout: 30000, // 30 second timeout for mobile
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -19,10 +19,12 @@ const retryConfig = {
   retries: 3,
   retryDelay: 1000,
   retryCondition: (error) => {
-    return error.code === 'NETWORK_ERROR' ||
-           error.code === 'TIMEOUT' ||
-           (error.response && error.response.status >= 500);
-  }
+    return (
+      error.code === "NETWORK_ERROR" ||
+      error.code === "TIMEOUT" ||
+      (error.response && error.response.status >= 500)
+    );
+  },
 };
 
 axiosInstance.interceptors.request.use(
@@ -74,9 +76,12 @@ axiosInstance.interceptors.response.use(
         timestamp: Date.now(),
       };
       try {
-        localStorage.setItem(`api-cache-${cacheKey}`, JSON.stringify(cacheData));
+        localStorage.setItem(
+          `api-cache-${cacheKey}`,
+          JSON.stringify(cacheData)
+        );
       } catch (error) {
-        console.warn('Cache storage failed:', error);
+        console.warn("Cache storage failed:", error);
       }
     }
     return response;
@@ -89,10 +94,18 @@ axiosInstance.interceptors.response.use(
 
     // Retry logic for mobile
     const config = error.config;
-    if (config && config.retry && config.retry.retries > 0 && retryConfig.retryCondition(error)) {
+    if (
+      config &&
+      config.retry &&
+      config.retry.retries > 0 &&
+      retryConfig.retryCondition(error)
+    ) {
       config.retry.retries -= 1;
-      return new Promise(resolve => {
-        setTimeout(() => resolve(axiosInstance(config)), config.retry.retryDelay);
+      return new Promise((resolve) => {
+        setTimeout(
+          () => resolve(axiosInstance(config)),
+          config.retry.retryDelay
+        );
       });
     }
 
